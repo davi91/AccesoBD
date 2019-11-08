@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import main.BDApp;
 
 /**
@@ -23,7 +25,7 @@ public class DBManager {
 		this.connection = appCon;
 	}
 	
-	public ArrayList<Estancia> getEstanciaValues() {
+	public ArrayList<Residencia> getResidenciaValues() {
 		
 		try {
 			
@@ -31,42 +33,59 @@ public class DBManager {
 			Statement st = connection.createStatement();
 			
 			// Obtenemos los resultados
-			ResultSet result =  st.executeQuery("select nomResidencia as nombreResidencia, nomEstudiante as nombreEstudiante, fechaInicio, fechaFin, preciopagado from estancias\n" + 
-												"inner join residencias on residencias.codResidencia = estancias.codResidencia\n" + 
-												"inner join estudiantes on estudiantes.codEstudiante = estancias.codEstudiante");
+			ResultSet result =  st.executeQuery("select codResidencia as id, nomResidencia as nombreResidencia, nomUniversidad as nombreUniversidad,"
+											+   "precioMensual as precio, comedor from residencias" 
+											+	" inner join universidades on universidades.codUniversidad = residencias.codUniversidad");
 			
-			ArrayList<Estancia> list = new ArrayList<>();
+			ArrayList<Residencia> list = new ArrayList<>();
 			
 			// Rellenamos datos
 			while(result.next()) {
 				
-				String nombreEstudiante = result.getString("nombreEstudiante");
+				int id = result.getInt("id");
 				String nombreResidencia = result.getString("nombreResidencia");
-				java.sql.Date fInicio = result.getDate("fechaInicio");
-				java.sql.Date fFin = result.getDate("fechaFin");
-				float precioPagado = result.getFloat("precioPagado");
+				String nombreUniversidad = result.getString("nombreUniversidad");
+				Float precio = result.getFloat("precio");
+				boolean esComedor = result.getBoolean("comedor");
 				
 				// Creamos el objeto estancia y lo vamos añadiendo al ArrayList
-				list.add(new Estancia( nombreEstudiante, nombreResidencia, fInicio.toString(), fFin.toString(), precioPagado));
+				list.add(new Residencia( id, nombreResidencia, nombreUniversidad, precio, esComedor));
 			}
 
 			return list;
 			
 		} catch (SQLException e) {
-			BDApp.sendConnectionError(e.toString());
+			BDApp.sendConnectionError(e.toString(), true);
 		}
 		
 		return null;
 	}
 	
-	public void insertarResidencia() {
+	public void insertarResidencia(Residencia myResi) {
 		
 		try {
 			
-			PreparedStatement st = connection.prepareStatement("insert into residencias values (null, ?, ?, ?, ?, ?)");
+			PreparedStatement st = connection.prepareStatement("insert into residencias values (NULL, ?, ?, ?, ?)");
+			
+			// Empezamos a poner los requisitos
+			st.setString(1, myResi.getNombre());
+			st.setString(2,  myResi.getCodUniversidad());
+			st.setFloat(3,  myResi.getPrecio());
+			st.setBoolean(4, myResi.isComedor());
+			
+			st.execute(); // Si se ha producido algún error se lanzará la SQLException.
+			
+			// También en MySQL se diseñó un trigger específico para el caso en que no existe la universidad introducida,
+			// para evitar hacer una consulta adicional mediante la conexión.
+			
+			// Si todo sale bien
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Confirmación");
+			alert.setHeaderText("La residencia ha sido introducida con éxito");
+			alert.showAndWait();
 			
 		} catch( SQLException e ) {
-			
+			BDApp.sendConnectionError(e.getMessage(), false);
 		}
 	}
 }

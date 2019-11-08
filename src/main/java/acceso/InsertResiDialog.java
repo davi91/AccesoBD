@@ -11,6 +11,7 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import main.BDApp;
 
 public class InsertResiDialog extends Dialog<Residencia> {
 
@@ -48,8 +49,10 @@ public class InsertResiDialog extends Dialog<Residencia> {
 			if( codArray.length != 6 ) 
 				return false;
 			
-			if(  precio.get() != null && !precio.get().equals("") && !checkIsNumber(precio.get()))
-				return false;
+			if(  precio.get() != null && precio.get().equals("") ||
+									  !checkIsNumber(precio.get()) ||
+									  Float.parseFloat(precio.get()) < BDApp.getMinprecioresidencia()) 			
+				return false;	
 			
 			return true;
 		}
@@ -85,7 +88,8 @@ public class InsertResiDialog extends Dialog<Residencia> {
 		setTitle("Insertar residencia");
 		setHeaderText("Insertar nueva residencia");
 		setContentText("* Los campos nombre y Cod. universidad son obligatorios\n"
-					+  "* El código de la universidad debe tener 6 caracteres");
+					+  "* El código de la universidad debe tener 6 caracteres\n"
+					+  "* El precio debe ser como mínimo 900" );
 		
 		ImageView resiIcon = new ImageView(getClass().getResource("/images/resiIcon.png").toString());
 		resiIcon.setFitWidth(48.0f);
@@ -135,15 +139,11 @@ public class InsertResiDialog extends Dialog<Residencia> {
 				
 				Residencia residencia;
 				
-				if( precioTxt.getText() != null && !precioTxt.getText().equals("")) {
-					residencia = new Residencia(nombreTxt.getText(), codTxt.getText().toCharArray(), Float.parseFloat(precioTxt.getText()), comedorCheck.isSelected());
-				} else {
-					residencia = new Residencia(nombreTxt.getText(), codTxt.getText().toCharArray(), comedorCheck.isSelected());
-				}
+				residencia = new Residencia(nombreTxt.getText(), codTxt.getText(), Float.parseFloat(precioTxt.getText()), comedorCheck.isSelected());
 				
 				return residencia;
 				
-				}
+			}
 			
 			return null;
 		});

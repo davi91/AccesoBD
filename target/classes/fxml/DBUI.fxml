@@ -21,24 +21,24 @@
       </Label>
       <TableView fx:id="tableEstancias" prefHeight="275.0" prefWidth="620.0" VBox.vgrow="ALWAYS">
          <columns>
-            <TableColumn prefWidth="75.0" text="Nom. estudiante">
-            	      <cellValueFactory><PropertyValueFactory property="nombreEstudiante" />
+            <TableColumn prefWidth="75.0" text="Cod. Residencia">
+            	      <cellValueFactory><PropertyValueFactory property="id" />
 	       			 </cellValueFactory>
             </TableColumn>
             <TableColumn prefWidth="75.0" text="Nom. residencia">
-                     <cellValueFactory><PropertyValueFactory property="nombreResidencia" />
+                     <cellValueFactory><PropertyValueFactory property="nombre" />
 	       			 </cellValueFactory>
             </TableColumn>
-            <TableColumn prefWidth="75.0" text="Fecha inicio">
-                     <cellValueFactory><PropertyValueFactory property="fechaInicio" />
+            <TableColumn prefWidth="152.0" text="Nom. universidad">
+                     <cellValueFactory><PropertyValueFactory property="nombreUniversidad" />
 	       			 </cellValueFactory>
             </TableColumn>
-            <TableColumn editable="false" prefWidth="75.0" text="Fecha fin">
-                     <cellValueFactory><PropertyValueFactory property="fechaFin" />
+            <TableColumn editable="false" prefWidth="95.0" text="Precio">
+                     <cellValueFactory><PropertyValueFactory property="precio" />
 	       			 </cellValueFactory>
             </TableColumn>
-            <TableColumn prefWidth="75.0" text="Precio pagado">
-                     <cellValueFactory><PropertyValueFactory property="precioPagado" />
+            <TableColumn prefWidth="81.0" text="Comedor">
+                     <cellValueFactory><PropertyValueFactory property="comedorStr" />
 	       			 </cellValueFactory>
             </TableColumn>
          </columns>

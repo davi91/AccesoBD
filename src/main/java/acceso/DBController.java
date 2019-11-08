@@ -31,7 +31,7 @@ public class DBController implements Initializable {
 	private VBox view;
 	
 	@FXML
-	private TableView<Estancia> tableEstancias;
+	private TableView<Residencia> tableEstancias;
 	
 	@FXML
 	private Button addBt, delBt, modBt, procBt;
@@ -42,7 +42,7 @@ public class DBController implements Initializable {
 	//-----------------------------------------------------------------
 	
 	// Model
-	private ListProperty<Estancia> estanciasList;
+	private ListProperty<Residencia> estanciasList;
 	
 	// Necesitamos una referencia a la aplicación padre
 	private BDApp app;
@@ -61,7 +61,7 @@ public class DBController implements Initializable {
 
 		
 		// Cargamos los datos en la tabla estancias, para ello tenemos que realizar las consultas pertienentes
-		estanciasList = new SimpleListProperty<Estancia>(FXCollections.observableArrayList(app.getSql().getEstanciaValues()));
+		estanciasList = new SimpleListProperty<Residencia>(FXCollections.observableArrayList(app.getDBManager().getResidenciaValues()));
 		tableEstancias.itemsProperty().bind(estanciasList);
 			
 		// Eventos
@@ -75,8 +75,9 @@ public class DBController implements Initializable {
 		Optional<Residencia> resiOp = dialog.showAndWait();
 		
 		// Introducimos nuestra nueva residencia
-		if( resiOp.isPresent() ) {
-			
+		if( resiOp.isPresent() && resiOp.get() != null ) {
+			// Añadimos la residencia
+			app.getDBManager().insertarResidencia(resiOp.get());
 		}
 		
 	}

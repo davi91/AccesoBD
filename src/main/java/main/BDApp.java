@@ -30,6 +30,11 @@ public class BDApp extends Application {
 	private static final String CON_MYSQL = "jdbc:mysql://localhost:3306/bdresidenciasescolares";
 	//---------------------------------------------------------
 
+	/**
+	 * Precio de la residencia, no puede ser menor de 900
+	 */
+	private static final int minPrecioResidencia = 900;
+	
 	// El controlador de la vista "sin procedimientos"
 	DBController dbRoot;
 	
@@ -52,7 +57,7 @@ public class BDApp extends Application {
 			initBD();
 			
 		} catch (SQLException | ClassNotFoundException e) {
-			sendConnectionError(e.toString());
+			sendConnectionError(e.toString(), true);
 		}
 		
 		// Cargamos el gestor
@@ -66,10 +71,6 @@ public class BDApp extends Application {
 		primaryStage.setTitle("Conexión con base de datos " + bd);
 		primaryStage.setScene(scene);
 		primaryStage.show();
-	}
-	
-	public DBManager getSql() {
-		return dbManager;
 	}
 	
 	/**
@@ -111,6 +112,15 @@ public class BDApp extends Application {
 		}
 	}
 
+	/**
+	 * Obtenemos el "manager" principal de la base de datos
+	 * @return El "manager" de la base de datos
+	 */
+	public DBManager getDBManager() {
+		return dbManager;
+	}
+	
+	
 	@Override
 	public void stop() throws Exception {
 		super.stop();
@@ -119,14 +129,15 @@ public class BDApp extends Application {
 		dbCon.close();
 	}
 
-	public static void sendConnectionError(String msg) {
+	public static void sendConnectionError(String msg, boolean bExit) {
 		
 		Alert alert = new Alert(AlertType.ERROR);
 		alert.setTitle("Base de datos");
 		alert.setHeaderText(msg);
 		alert.showAndWait();
 		
-		Platform.exit();
+		if( bExit )
+			Platform.exit();
 	}
 	
 	public static void main(String[] args) {
@@ -143,6 +154,10 @@ public class BDApp extends Application {
 	
 	public Connection getdbCon() {
 		return dbCon;
+	}
+
+	public static int getMinprecioresidencia() {
+		return minPrecioResidencia;
 	}
 
 }
