@@ -19,7 +19,7 @@
             <Font name="System Bold Italic" size="12.0" />
          </font>
       </Label>
-      <TableView fx:id="tableEstancias" prefHeight="275.0" prefWidth="620.0" VBox.vgrow="ALWAYS">
+      <TableView fx:id="tablaResidencias" prefHeight="275.0" prefWidth="620.0" VBox.vgrow="ALWAYS">
          <columns>
             <TableColumn prefWidth="75.0" text="Cod. Residencia">
             	      <cellValueFactory><PropertyValueFactory property="id" />

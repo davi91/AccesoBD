@@ -1,12 +1,15 @@
 package acceso;
 
 import javafx.beans.property.FloatProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class Estancia {
 
+	
 	private StringProperty nombreEstudiante = new SimpleStringProperty();
 	private StringProperty nombreResidencia = new SimpleStringProperty();
 	private StringProperty fechaInicio = new SimpleStringProperty();
@@ -21,7 +24,7 @@ public class Estancia {
 			setFechaFin(fechaFin);
 			setPrecioPagado(precioPagado);
 	}
-	
+
 	public final StringProperty nombreEstudianteProperty() {
 		return this.nombreEstudiante;
 	}

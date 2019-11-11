@@ -61,7 +61,49 @@ public class DBManager {
 		return null;
 	}
 	
-	public void insertarResidencia(Residencia myResi) {
+	/**
+	 * Obtener el nombre de una universidad a partir de su ID
+	 * @param ID de la universidad
+	 * @return Nombre de la universidad
+	 */
+	public String consultarNombreUniversidad(String id) {
+		
+		try {
+			
+			// Preparamos la sentencia, en este caso una básica ya que sólo vamos a consultar los datos de una tabla
+			PreparedStatement st = connection.prepareStatement("select nomUniversidad as nombreUniversidad from universidades" 
+															+	" where universidades.codUniversidad = ?");
+			
+			// Ponemos el dato de la universidad
+			st.setString(1, id);
+			
+			// Obtenemos los resultados
+			ResultSet result = st.executeQuery();
+			
+			
+			if( result.next() ) {
+				return result.getString("nombreUniversidad");
+			}
+
+			else {
+				throw new SQLException("No se encontró el nombre de la universidad");
+			}	
+			
+		} catch (SQLException e) {
+			BDApp.sendConnectionError(e.toString(), false);
+		}
+		
+		return null;	
+	}
+	
+	/**
+	 * Insertamos una residencia, en caso de que la universidad no exista lanzamos un error
+	 * En particular estaríamos forzando al SQL a lanzar un error, pero sería lo mismo si
+	 * consultáramos en la BD, "lo molestaríamos igual"
+	 * @param myResi La residencia a añadir
+	 * @throws RuntimeException en el caso de insertar nos aseguramos de lanzar un error
+	 */
+	public void insertarResidencia(Residencia myResi) throws RuntimeException {
 		
 		try {
 			
@@ -86,6 +128,80 @@ public class DBManager {
 			
 		} catch( SQLException e ) {
 			BDApp.sendConnectionError(e.getMessage(), false);
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Consultamos las estancias de una determinada residencia.
+	 * @param id ID de la residenica
+	 * @return Número de estancias localizadas para esa residencia
+	 */
+	
+	public int consultarEstancias(int id) {
+		
+		try {
+			
+			// Preparamos la sentencia, en este caso una básica ya que sólo vamos a consultar los datos de una tabla
+			PreparedStatement st = connection.prepareStatement("select count(*) from estancias where codResidencia = ?");
+			
+			// Id de la residencia
+			st.setInt(1, id);
+			
+			// Obtenemos los resultados
+			ResultSet result =  st.executeQuery();
+			
+			// Nos despalazamos
+			result.last();
+			
+			return result.getInt(1);
+			
+		} catch (SQLException e) {
+			BDApp.sendConnectionError(e.toString(), true);
+		}
+		
+		return 0;
+	}
+	
+	/**
+	 * Eliminamos la residencia seleccionada, ya no debe de estar
+	 * registrada en la tabla estancias 
+	 * @param i ID de la residencia
+	 */
+	public void deleteResidencia(int id) throws RuntimeException {
+		
+		try {
+			
+			// Preparamos la sentencia, en este caso una básica ya que sólo vamos a consultar los datos de una tabla
+			PreparedStatement st = connection.prepareStatement("delete from residencias where codResidencia = ?");
+			
+			// Id de la residencia
+			st.setInt(1, id);
+			
+			// Ejectuamos
+			st.execute();
+			
+		} catch (SQLException e) {
+			BDApp.sendConnectionError(e.toString(), false);
+		}	
+	}
+	
+	/**
+	 * Eliminamos las estancias relacionadas con esta residencia. 
+	 * @param id ID de la residencia
+	 */
+	public void eliminarEstancias(int id) {
+		
+		try {
+			
+			PreparedStatement st = connection.prepareStatement("delete from estancias where codResidencia = ?");
+			
+			st.setInt(1, id);
+			
+			st.execute();
+			
+		} catch (SQLException e) {
+			BDApp.sendConnectionError(e.toString(), false);
 		}
 	}
 }

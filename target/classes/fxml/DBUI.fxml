@@ -14,12 +14,12 @@
 
 <VBox fx:id="view" alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" spacing="10.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Label text="ESTANCIAS" underline="true">
+      <Label text="RESIDENCIAS" underline="true">
          <font>
             <Font name="System Bold Italic" size="12.0" />
          </font>
       </Label>
-      <TableView fx:id="tableEstancias" prefHeight="275.0" prefWidth="620.0" VBox.vgrow="ALWAYS">
+      <TableView fx:id="tablaResidencias" prefHeight="275.0" prefWidth="620.0" VBox.vgrow="ALWAYS">
          <columns>
             <TableColumn prefWidth="75.0" text="Cod. Residencia">
             	      <cellValueFactory><PropertyValueFactory property="id" />
