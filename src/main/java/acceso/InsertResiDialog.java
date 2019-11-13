@@ -1,5 +1,7 @@
 package acceso;
 
+import java.util.ArrayList;
+
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.StringExpression;
 import javafx.scene.Node;
@@ -7,10 +9,12 @@ import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import main.BDApp;
 
 public class InsertResiDialog extends Dialog<Residencia> {
@@ -18,16 +22,14 @@ public class InsertResiDialog extends Dialog<Residencia> {
 	private class DialogCheckBinding extends BooleanBinding {
 
 		private StringExpression nombre;
-		private StringExpression cod;
 		private StringExpression precio;
-		
-		public DialogCheckBinding(StringExpression nombre, StringExpression cod, StringExpression precio) {
+
+		public DialogCheckBinding(StringExpression nombre, StringExpression precio) {
 			
 			this.nombre = nombre;
-			this.cod = cod;
 			this.precio = precio;
 			
-			bind(this.nombre, this.cod, this.precio);
+			bind(this.nombre, this.precio);
 		}
 		
 		@Override
@@ -37,16 +39,10 @@ public class InsertResiDialog extends Dialog<Residencia> {
 		
 		private boolean checkFieldsValid() {
 			
-			if( nombre.get() == null || cod.get() == null  ) 
+			if( nombre.get() == null  ) 
 				return false;
 			
-			if( nombre.get().equals("") || cod.get().equals(""))
-				return false;
-			
-			// Comprobamos que el código de la universidad tiene 6 caracteres
-			
-			char[] codArray = cod.get().toCharArray();
-			if( codArray.length != 6 ) 
+			if( nombre.get().equals(""))
 				return false;
 			
 			if(  precio.get() != null && precio.get().equals("") ||
@@ -81,15 +77,51 @@ public class InsertResiDialog extends Dialog<Residencia> {
 	// El precio debe ser numérico
 	private TextField precioTxt;
 	
+	// El botón de inserción
 	private Node insertBt;
 	
-	public InsertResiDialog() {
+	// El ID de la residencia
+	private int resiID = -1;
+	
+	
+	/**
+	 * Constructor por defecto, para insertar
+	 * @param universidades La lista de universidades para elegir
+	 */
+	public InsertResiDialog(ArrayList<String> universidades) {
+		buildGUI(universidades, "", "", -1, false);
+	}
+	
+	/**
+	 * Constructor específico para modificar
+	 * @param universidades La lista de universidades para elegir
+	 * @param nombre El nombre de la residencia
+	 * @param universidad La universidad a la que pertenece
+	 * @param precio El precio de la residencia
+	 * @param comedor Si tiene o no comedor la residencia
+	 * @param id ID de la residencia
+	 */
+	public InsertResiDialog(ArrayList<String> universidades, String nombre, String universidad, float precio, boolean comedor, int id) {
+		resiID = id;
+		buildGUI(universidades, nombre, universidad, precio, comedor);
+	}
+	
+	/**
+	 * Construimos la interfaz del diálogo
+	 * @param nombre El nombre de la residencia
+	 * @param universidad La universidad a la que pertenece
+	 * @param precio El precio de la residencia
+	 * @param comedor Si tiene o no comedor
+	 * @param id El ID de la residencia, si no se quiere mostrar entonces será -1.
+	 */
+	public void buildGUI( ArrayList<String> listaUniversidades, String nombre, String universidad, float precio, boolean comedor ) {
 		
 		setTitle("Insertar residencia");
 		setHeaderText("Insertar nueva residencia");
-		setContentText("* Los campos nombre y Cod. universidad son obligatorios\n"
-					+  "* El código de la universidad debe tener 6 caracteres\n"
+		setContentText("* El campo nombre es obligatorio\n"
 					+  "* El precio debe ser como mínimo 900" );
+		
+		int currentRow = 0;
 		
 		ImageView resiIcon = new ImageView(getClass().getResource("/images/resiIcon.png").toString());
 		resiIcon.setFitWidth(48.0f);
@@ -99,30 +131,44 @@ public class InsertResiDialog extends Dialog<Residencia> {
 		GridPane root = new GridPane();
 		root.setHgap(5);
 		root.setVgap(5);
-		
+
 		Label infoLabel = new Label(getContentText());
 		infoLabel.setWrapText(true);
-		root.addRow(0, infoLabel);
+		root.addRow(currentRow++, infoLabel);
 		GridPane.setColumnSpan(infoLabel, 2);
+		
+		if( resiID != -1 ) {
+			Label idLbl = new Label("ID:");
+			Label idTxt = new Label(String.valueOf(resiID));
+			root.addRow(currentRow++, idLbl, idTxt);
+		}
 		
 		Label nombreLbl = new Label("Nombre:");
 		nombreTxt = new TextField();
 		nombreTxt.setPromptText("Nombre residencia");
-		root.addRow(1,  nombreLbl, nombreTxt);
+		root.addRow(currentRow++,  nombreLbl, nombreTxt);
 		
-		Label codLbl = new Label("Cod. universidad:");
-		codTxt = new TextField();
-		codTxt.setPromptText("Código universidad");
-		root.addRow(2,  codLbl, codTxt);
+		Label uniLbl = new Label("Cod. universidad:");
+		ComboBox<String> uniCb = new ComboBox<String>();
+		uniCb.getItems().addAll(listaUniversidades);
+		uniCb.setMaxWidth(Double.MAX_VALUE);
+		GridPane.setHgrow(uniCb, Priority.ALWAYS);
+		if( !universidad.equals("") ) {
+			uniCb.getSelectionModel().select(universidad);
+		} else {
+			uniCb.getSelectionModel().selectFirst();
+		}
+		
+		root.addRow(currentRow++, uniLbl, uniCb);
 		
 		Label precioLbl = new Label("Precio");
 		precioTxt = new TextField();
 		precioTxt.setPromptText("Precio residencia");
-		root.addRow(3, precioLbl, precioTxt);
+		root.addRow(currentRow++, precioLbl, precioTxt);
 		
 		Label comedorLbl = new Label("Comedor:");
 		CheckBox comedorCheck = new CheckBox();
-		root.addRow(4,  comedorLbl, comedorCheck);
+		root.addRow(currentRow++,  comedorLbl, comedorCheck);
 		
 		ButtonType okButton = new ButtonType("Insertar", ButtonData.OK_DONE);
 		ButtonType cancelButton = new ButtonType("Cancelar", ButtonData.CANCEL_CLOSE);
@@ -131,7 +177,7 @@ public class InsertResiDialog extends Dialog<Residencia> {
 		
 		// El botón no estará disponible  hasta que se hayan introducido los datos correcto
 		insertBt = getDialogPane().lookupButton(okButton);
-		insertBt.disableProperty().bind(new DialogCheckBinding( nombreTxt.textProperty(), codTxt.textProperty(), precioTxt.textProperty()).not());
+		insertBt.disableProperty().bind(new DialogCheckBinding( nombreTxt.textProperty(), precioTxt.textProperty()).not());
 		
 		setResultConverter( bt -> {
 			
@@ -139,7 +185,7 @@ public class InsertResiDialog extends Dialog<Residencia> {
 				
 				Residencia residencia;
 				
-				residencia = new Residencia(nombreTxt.getText(), codTxt.getText(), Float.parseFloat(precioTxt.getText()), comedorCheck.isSelected());
+				residencia = new Residencia(resiID, nombreTxt.getText(), uniCb.getSelectionModel().getSelectedItem(), Float.parseFloat(precioTxt.getText()), comedorCheck.isSelected());
 				
 				return residencia;
 				
@@ -147,11 +193,8 @@ public class InsertResiDialog extends Dialog<Residencia> {
 			
 			return null;
 		});
-		
-		
+			
 	}
 	
-	
-	
-	
+		
 }

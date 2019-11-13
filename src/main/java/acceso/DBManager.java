@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import com.mysql.cj.protocol.Resultset;
+
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import main.BDApp;
@@ -25,6 +27,10 @@ public class DBManager {
 		this.connection = appCon;
 	}
 	
+	/**
+	 * Obtenemos los datos de las residencias
+	 * @return Las residencias también llevan incorporado el código de la universidad internamente.
+	 */
 	public ArrayList<Residencia> getResidenciaValues() {
 		
 		try {
@@ -34,7 +40,7 @@ public class DBManager {
 			
 			// Obtenemos los resultados
 			ResultSet result =  st.executeQuery("select codResidencia as id, nomResidencia as nombreResidencia, nomUniversidad as nombreUniversidad,"
-											+   "precioMensual as precio, comedor from residencias" 
+											+   "precioMensual as precio, comedor, residencias.codUniversidad as codUniversidad from residencias" 
 											+	" inner join universidades on universidades.codUniversidad = residencias.codUniversidad");
 			
 			ArrayList<Residencia> list = new ArrayList<>();
@@ -45,11 +51,14 @@ public class DBManager {
 				int id = result.getInt("id");
 				String nombreResidencia = result.getString("nombreResidencia");
 				String nombreUniversidad = result.getString("nombreUniversidad");
+				String codUniversidad = result.getString("codUniversidad");
 				Float precio = result.getFloat("precio");
 				boolean esComedor = result.getBoolean("comedor");
 				
 				// Creamos el objeto estancia y lo vamos añadiendo al ArrayList
-				list.add(new Residencia( id, nombreResidencia, nombreUniversidad, precio, esComedor));
+				Residencia r = new Residencia( id, nombreResidencia, nombreUniversidad, precio, esComedor);
+				r.setCodUniversidad(codUniversidad);
+				list.add(r);
 			}
 
 			return list;
@@ -62,27 +71,27 @@ public class DBManager {
 	}
 	
 	/**
-	 * Obtener el nombre de una universidad a partir de su ID
-	 * @param ID de la universidad
-	 * @return Nombre de la universidad
+	 * A partir del nombre consultamos el código de la universidad
+	 * @param Nombre de la universidad
+	 * @return Código de la universidad
 	 */
-	public String consultarNombreUniversidad(String id) {
+	public String consultarCodUniversidad(String nombre) {
 		
 		try {
 			
 			// Preparamos la sentencia, en este caso una básica ya que sólo vamos a consultar los datos de una tabla
-			PreparedStatement st = connection.prepareStatement("select nomUniversidad as nombreUniversidad from universidades" 
-															+	" where universidades.codUniversidad = ?");
+			PreparedStatement st = connection.prepareStatement("select codUniversidad from universidades" 
+															+	" where universidades.nomUniversidad = ?");
 			
 			// Ponemos el dato de la universidad
-			st.setString(1, id);
+			st.setString(1, nombre);
 			
 			// Obtenemos los resultados
 			ResultSet result = st.executeQuery();
 			
 			
 			if( result.next() ) {
-				return result.getString("nombreUniversidad");
+				return result.getString("codUniversidad");
 			}
 
 			else {
@@ -97,11 +106,35 @@ public class DBManager {
 	}
 	
 	/**
-	 * Insertamos una residencia, en caso de que la universidad no exista lanzamos un error
-	 * En particular estaríamos forzando al SQL a lanzar un error, pero sería lo mismo si
-	 * consultáramos en la BD, "lo molestaríamos igual"
+	 * Obtener el nombre de todas las universidades
+	 * @return Una lista con todos los nombres de las universidades
+	 */
+	public ArrayList<String> consultarUniversidades() {
+		
+		try {
+			
+			PreparedStatement st = connection.prepareStatement("select nomUniversidad from universidades");
+			
+			ResultSet result = st.executeQuery();
+			
+			ArrayList<String> listaUniversidades = new ArrayList<>();
+			while( result.next() ) {
+				listaUniversidades.add(result.getString("nomUniversidad"));
+			}
+			
+			return listaUniversidades;
+			
+		} catch(SQLException e) {
+			BDApp.sendConnectionError(e.toString(),  false);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Insertamos una residencia
 	 * @param myResi La residencia a añadir
-	 * @throws RuntimeException en el caso de insertar nos aseguramos de lanzar un error
+	 * @throws RuntimeException en el caso de error al insertar nos aseguramos de lanzar un error
 	 */
 	public void insertarResidencia(Residencia myResi) throws RuntimeException {
 		
@@ -115,7 +148,7 @@ public class DBManager {
 			st.setFloat(3,  myResi.getPrecio());
 			st.setBoolean(4, myResi.isComedor());
 			
-			st.execute(); // Si se ha producido algún error se lanzará la SQLException.
+			st.executeUpdate(); // Si se ha producido algún error se lanzará la SQLException.
 			
 			// También en MySQL se diseñó un trigger específico para el caso en que no existe la universidad introducida,
 			// para evitar hacer una consulta adicional mediante la conexión.
@@ -179,7 +212,7 @@ public class DBManager {
 			st.setInt(1, id);
 			
 			// Ejectuamos
-			st.execute();
+			st.executeUpdate();
 			
 		} catch (SQLException e) {
 			BDApp.sendConnectionError(e.toString(), false);
@@ -198,10 +231,34 @@ public class DBManager {
 			
 			st.setInt(1, id);
 			
-			st.execute();
+			st.executeUpdate();
 			
 		} catch (SQLException e) {
 			BDApp.sendConnectionError(e.toString(), false);
+		}
+	}
+	
+	public void modifyResidencia(Residencia resiUpdate) {
+		
+		try {
+			
+			PreparedStatement st = connection.prepareStatement("update residencias "
+															+ " set nomResidencia = ?,"
+															+ " set codUniversidad = ?,"
+															+ " set precioMensual = ?,"
+															+ " set comedor = ?"
+															+ " where codResidencia = ?)");
+			
+			st.setString(1, resiUpdate.getNombre());
+			st.setString(2,  resiUpdate.getCodUniversidad());
+			st.setFloat(3, resiUpdate.getPrecio());
+			st.setBoolean(4, resiUpdate.isComedor());
+			st.setInt(5, resiUpdate.getId());
+			
+			st.executeUpdate();
+			
+		} catch(SQLException e) {
+			BDApp.sendConnectionError(e.toString(),  false);
 		}
 	}
 }

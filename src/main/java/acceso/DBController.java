@@ -97,7 +97,28 @@ public class DBController implements Initializable {
 	 */
 	private void onModifyResidencia() {
 		
+		// Primero verificamos que el ID es correcto
+		Residencia myResi = getElementByIndex(id.get());
 		
+		if( myResi == null ) {
+			
+			sendResiNotFoundWarning();
+			return;
+		}
+		
+		// Obtenemos la lista de universidades 
+		ArrayList<String> listaUnis = app.getDBManager().consultarUniversidades();
+		
+		// Usamos el diálogo de inserción pero para la modificación, para ello consultamos los datos de la residecnia en la tabla
+		InsertResiDialog dialog = new InsertResiDialog(listaUnis, myResi.getNombre(), myResi.getNombreUniversidad(), myResi.getPrecio(), myResi.isComedor(), myResi.getId());
+		
+		Optional<Residencia> opResi = dialog.showAndWait();
+		
+		// Aplicamos las modificaciones, tanto en la lista como en la base de datos
+		if( opResi.isPresent() && opResi.get() != null ) {
+			
+			
+		}
 	}
 	
 	/**
@@ -122,12 +143,7 @@ public class DBController implements Initializable {
 		
 		if( myResi == null ) {
 			
-			Alert alert = new Alert(AlertType.WARNING);
-			alert.setTitle("Eliminar residencia");
-			alert.setHeaderText("Residencia no encontrada");
-			alert.setContentText("El ID seleccionado no se encuentra en la tabla residencias");
-			
-			alert.showAndWait();
+			sendResiNotFoundWarning();
 			return;
 		}
 		
@@ -193,7 +209,8 @@ public class DBController implements Initializable {
 	
 	private void onInsertResidencia() {
 		
-		InsertResiDialog dialog = new InsertResiDialog();
+		// obtenemos la lista de universidades
+		InsertResiDialog dialog = new InsertResiDialog(app.getDBManager().consultarUniversidades());
 		
 		Optional<Residencia> resiOp = dialog.showAndWait();
 		
@@ -203,18 +220,17 @@ public class DBController implements Initializable {
 			try {
 				
 				// Añadimos la residencia
-				app.getDBManager().insertarResidencia(resiOp.get());
+				// Antes de nada, lo que recibimos es el nombre de la universidad, tiene que ser el código
+				Residencia ourResi = resiOp.get();
+				ourResi.setCodUniversidad(app.getDBManager().consultarCodUniversidad(ourResi.getNombreUniversidad()));
+				app.getDBManager().insertarResidencia(ourResi);
 				
-				// Para actualizar la lista, necesitamos añadir algunos datos que no están en la clase principal
 				
 				// Para el ID necesitamos el último de la tabla residencias para no estar de nuevo conectando con la base de datos
-				resiOp.get().setId( residenciasList.get(residenciasList.getSize()-1).getId()+1);
-				
-				// Obtenemos el nombre de la universidad
-				resiOp.get().setNombreUniversidad(app.getDBManager().consultarNombreUniversidad(resiOp.get().getCodUniversidad()));
+				ourResi.setId( residenciasList.get(residenciasList.getSize()-1).getId()+1);
 				
 				// Añadimos a la lista
-				residenciasList.add(resiOp.get());
+				residenciasList.add(ourResi);
 			
 			} catch(RuntimeException e ) {
 				// No se ha podido insertar la residencia, algún campo no es válido, así no lo añadimos a la lista
@@ -222,6 +238,17 @@ public class DBController implements Initializable {
 		}
 		
 	}
+	
+	private void sendResiNotFoundWarning() {
+		
+		Alert alert = new Alert(AlertType.WARNING);
+		alert.setTitle("Eliminar residencia");
+		alert.setHeaderText("Residencia no encontrada");
+		alert.setContentText("El ID seleccionado no se encuentra en la tabla residencias");
+			
+		alert.showAndWait();
+	}
+	
 	public VBox getRootView() {
 		return view;
 	}

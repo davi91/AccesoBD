@@ -49,15 +49,6 @@ public class Residencia {
 		
 	}
 
-	public Residencia( String nombre, String codUniversidad, float precio, boolean comedor ) {
-		
-		this();
-		setCodUniversidad(codUniversidad);
-		setNombre(nombre);
-		setPrecio(precio);
-		setComedor(comedor);
-		
-	}
 	
 	public final IntegerProperty idProperty() {
 		return this.id;
