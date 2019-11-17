@@ -1,4 +1,5 @@
 package main;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -6,6 +7,7 @@ import java.util.Optional;
 
 import acceso.DBController;
 import acceso.DBManager;
+import acceso.ProcController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -38,6 +40,9 @@ public class BDApp extends Application {
 	// El controlador de la vista "sin procedimientos"
 	DBController dbRoot;
 	
+	// El controlador de la vista "con procedimientos"
+	ProcController dbProcRoot;
+	
 	// Serán dos ventanas independientes las que usen la base de datos seleccionada.
 	private String bd;
 	
@@ -46,6 +51,9 @@ public class BDApp extends Application {
 	
 	// Nuestro gestor de conexión 
 	DBManager dbManager;
+	
+	// Una referencia a nuestra ventana
+	Stage mainStage;
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -67,10 +75,11 @@ public class BDApp extends Application {
 		dbRoot = new DBController(this);
 		
 		Scene scene = new Scene(dbRoot.getRootView(), 640, 480);
+		mainStage = primaryStage;
 		
-		primaryStage.setTitle("Conexión con base de datos " + bd);
-		primaryStage.setScene(scene);
-		primaryStage.show();
+		mainStage.setTitle("Conexión con base de datos " + bd);
+		mainStage.setScene(scene);
+		mainStage.show();
 	}
 	
 	/**
@@ -138,6 +147,18 @@ public class BDApp extends Application {
 		
 		if( bExit )
 			Platform.exit();
+	}
+	
+	public void launchProcWindow() {
+		
+		try {
+			dbProcRoot = new ProcController(this);
+			Scene scene = new Scene(dbProcRoot.getRootView(), 640, 480);
+			mainStage.setScene(scene);
+		} catch (IOException e) {
+			e.printStackTrace();
+			sendConnectionError(e.toString(), true);
+		}
 	}
 	
 	public static void main(String[] args) {

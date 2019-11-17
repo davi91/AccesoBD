@@ -25,8 +25,8 @@ public class Residencia {
 	private Residencia() {
 		
 		comedorStr.bind( Bindings.when(comedor.not())
-						 .then( new SimpleStringProperty("Si"))
-						 .otherwise( new SimpleStringProperty("No")));
+						 .then( new SimpleStringProperty("No"))
+						 .otherwise( new SimpleStringProperty("Si")));
 	}
 	
 	/**

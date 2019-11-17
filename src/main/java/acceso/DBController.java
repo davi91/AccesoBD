@@ -32,6 +32,11 @@ import javafx.scene.layout.VBox;
 import javafx.util.converter.NumberStringConverter;
 import main.BDApp;
 
+/**
+ * Controlador principal para el acceso a datos sin usar procedimientos
+ * @author David Fernández Nieves
+ *
+ */
 public class DBController implements Initializable {
 
 	// FXML : View
@@ -90,8 +95,16 @@ public class DBController implements Initializable {
 		addBt.setOnAction( evt -> onInsertResidencia() );
 		modBt.setOnAction( evt -> onModifyResidencia() );
 		delBt.setOnAction( evt -> onDeleteResidencia() );
+		procBt.setOnAction(evt -> onProcSelected() );
 	}
 
+	/**
+	 * Llamamos a la App para generar el contenido de procedimientos
+	 */
+	private void onProcSelected() {
+		app.launchProcWindow();
+	}
+	
 	/**
 	 * Modificamos los datos de una residencia
 	 */
@@ -117,7 +130,19 @@ public class DBController implements Initializable {
 		// Aplicamos las modificaciones, tanto en la lista como en la base de datos
 		if( opResi.isPresent() && opResi.get() != null ) {
 			
+			// Actalizamos la lista
+			Residencia otherResi = opResi.get();
+			myResi.setComedor(otherResi.isComedor());
+			myResi.setNombre(otherResi.getNombre());
 			
+			if( myResi.getCodUniversidad() != otherResi.getCodUniversidad() )
+				myResi.setCodUniversidad(app.getDBManager().consultarCodUniversidad(otherResi.getNombreUniversidad()));
+			
+			myResi.setNombreUniversidad(otherResi.getNombreUniversidad());
+			myResi.setPrecio(otherResi.getPrecio());
+			
+			// Actualizamos la base de datos
+			app.getDBManager().modifyResidencia(myResi);
 		}
 	}
 	
@@ -215,7 +240,7 @@ public class DBController implements Initializable {
 		Optional<Residencia> resiOp = dialog.showAndWait();
 		
 		// Introducimos nuestra nueva residencia
-		if( resiOp.isPresent() && resiOp.get() != null ) {
+		if( resiOp.isPresent() ) {
 			
 			try {
 				
@@ -225,6 +250,11 @@ public class DBController implements Initializable {
 				ourResi.setCodUniversidad(app.getDBManager().consultarCodUniversidad(ourResi.getNombreUniversidad()));
 				app.getDBManager().insertarResidencia(ourResi);
 				
+				// Si todo sale bien
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Confirmación");
+				alert.setHeaderText("La residencia ha sido introducida con éxito");
+				alert.showAndWait();
 				
 				// Para el ID necesitamos el último de la tabla residencias para no estar de nuevo conectando con la base de datos
 				ourResi.setId( residenciasList.get(residenciasList.getSize()-1).getId()+1);

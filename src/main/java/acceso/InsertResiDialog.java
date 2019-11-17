@@ -16,6 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import main.BDApp;
+import utils.NumberBinding;
 
 public class InsertResiDialog extends Dialog<Residencia> {
 
@@ -144,7 +145,7 @@ public class InsertResiDialog extends Dialog<Residencia> {
 		}
 		
 		Label nombreLbl = new Label("Nombre:");
-		nombreTxt = new TextField();
+		nombreTxt = new TextField(nombre);
 		nombreTxt.setPromptText("Nombre residencia");
 		root.addRow(currentRow++,  nombreLbl, nombreTxt);
 		
@@ -162,12 +163,13 @@ public class InsertResiDialog extends Dialog<Residencia> {
 		root.addRow(currentRow++, uniLbl, uniCb);
 		
 		Label precioLbl = new Label("Precio");
-		precioTxt = new TextField();
+		precioTxt = new TextField((precio != -1 ) ? String.valueOf(precio) : "900");
 		precioTxt.setPromptText("Precio residencia");
 		root.addRow(currentRow++, precioLbl, precioTxt);
 		
 		Label comedorLbl = new Label("Comedor:");
 		CheckBox comedorCheck = new CheckBox();
+		comedorCheck.setSelected(comedor);
 		root.addRow(currentRow++,  comedorLbl, comedorCheck);
 		
 		ButtonType okButton = new ButtonType("Insertar", ButtonData.OK_DONE);
@@ -177,7 +179,11 @@ public class InsertResiDialog extends Dialog<Residencia> {
 		
 		// El botón no estará disponible  hasta que se hayan introducido los datos correcto
 		insertBt = getDialogPane().lookupButton(okButton);
-		insertBt.disableProperty().bind(new DialogCheckBinding( nombreTxt.textProperty(), precioTxt.textProperty()).not());
+		insertBt.disableProperty().bind(new NumberBinding(precioTxt.textProperty())
+										.and(nombreTxt.textProperty().isNotNull()
+									    .and(nombreTxt.textProperty().isNotEmpty())).not());
+
+		//insertBt.disableProperty().bind(new DialogCheckBinding( nombreTxt.textProperty(), precioTxt.textProperty()).not());
 		
 		setResultConverter( bt -> {
 			

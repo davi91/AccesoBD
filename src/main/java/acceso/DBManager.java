@@ -5,12 +5,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
-
-import com.mysql.cj.protocol.Resultset;
+import java.util.HashMap;
+import java.util.Map;
+import java.sql.CallableStatement;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.util.Pair;
 import main.BDApp;
 
 /**
@@ -65,6 +68,41 @@ public class DBManager {
 			
 		} catch (SQLException e) {
 			BDApp.sendConnectionError(e.toString(), true);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Obtenemos los datos de las estancias
+	 * @return Las distintas estancias
+	 */
+	public ArrayList<Estancia> getEstanciasValues(String dni) {
+		
+		try {
+			
+			CallableStatement stmt = connection.prepareCall("call sp_estuEstancias (?)");
+			stmt.setString(1, dni);
+			
+			ArrayList<Estancia> estancias = new ArrayList<>();
+			
+			ResultSet result = stmt.executeQuery();
+			
+			while( result.next() ) {
+				
+				Estancia estancia = new Estancia(result.getString("nomUniversidad"), 
+												result.getString("nomResidencia"),
+												result.getDate("fechaInicio").toString(),
+												result.getDate("fechaFin").toString(), 
+												result.getFloat("preciopagado"));
+				
+				estancias.add(estancia);
+			}
+			
+			return estancias;
+			
+		} catch (SQLException e) {
+			BDApp.sendConnectionError(e.toString(), false);
 		}
 		
 		return null;
@@ -148,21 +186,75 @@ public class DBManager {
 			st.setFloat(3,  myResi.getPrecio());
 			st.setBoolean(4, myResi.isComedor());
 			
-			st.executeUpdate(); // Si se ha producido algún error se lanzará la SQLException.
+			st.executeUpdate(); // Si se ha producido algún error se lanzará la SQLException.		
 			
-			// También en MySQL se diseñó un trigger específico para el caso en que no existe la universidad introducida,
-			// para evitar hacer una consulta adicional mediante la conexión.
+		} catch( SQLException e ) {
+			BDApp.sendConnectionError(e.getMessage(), false);
+			throw new RuntimeException(e); // Avisamos de que no se siga con la inserción
+		}
+	}
+	
+	/**
+	 * Insertamos una residencia
+	 * @param myResi La residencia a añadir
+	 * @throws RuntimeException en el caso de error al insertar nos aseguramos de lanzar un error
+	 */
+	public Map<String, Boolean> proc_insertarResidencia(Residencia myResi) throws RuntimeException {
+		
+		try {
 			
-			// Si todo sale bien
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Confirmación");
-			alert.setHeaderText("La residencia ha sido introducida con éxito");
-			alert.showAndWait();
+			// Iniciamos la sentencia
+			CallableStatement st = connection.prepareCall("call sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
+			
+			// Empezamos a poner los requisitos
+			st.setString(1, myResi.getNombre());
+			st.setString(2,  myResi.getCodUniversidad());
+			st.setFloat(3,  myResi.getPrecio());
+			st.setBoolean(4, myResi.isComedor());
+			
+			// Parámetros de salida
+			st.registerOutParameter(5, Types.BOOLEAN);
+			st.registerOutParameter(6, Types.BOOLEAN);
+			
+			st.execute(); 
+			
+			// Devolvemos los valores
+			Map<String, Boolean> results = new HashMap<>();
+			results.put("UNIVERSIDAD_OK", st.getBoolean(5));
+			results.put("RESIDENCIA_OK", st.getBoolean(6));
+			
+			return results;
 			
 		} catch( SQLException e ) {
 			BDApp.sendConnectionError(e.getMessage(), false);
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public Map<String, Integer> getResidenciasPorUniversidad(String universidad, float precio) {
+		
+		try {
+			
+			CallableStatement stmt = connection.prepareCall("call sp_cuentaResidencias ( ?, ?, ?, ?)");
+			
+			stmt.setString(1, universidad);
+			stmt.setFloat(2, precio);
+			stmt.registerOutParameter(3, Types.INTEGER);
+			stmt.registerOutParameter(4, Types.INTEGER);
+			
+			stmt.execute();
+			
+			HashMap<String, Integer> results = new HashMap<>();
+			results.put("CANT_RESIDENCIAS", stmt.getInt(3));
+			results.put("CANT_RESIDENCIAS_PRECIO",  stmt.getInt(4));
+			
+			return results;
+			
+		} catch(SQLException e) {
+			BDApp.sendConnectionError(e.getMessage(), false);
+		}
+		
+		return null;
 	}
 
 	/**
@@ -244,10 +336,10 @@ public class DBManager {
 			
 			PreparedStatement st = connection.prepareStatement("update residencias "
 															+ " set nomResidencia = ?,"
-															+ " set codUniversidad = ?,"
-															+ " set precioMensual = ?,"
-															+ " set comedor = ?"
-															+ " where codResidencia = ?)");
+															+ " codUniversidad = ?,"
+															+ " precioMensual = ?,"
+															+ " comedor = ?"
+															+ " where codResidencia = ?");
 			
 			st.setString(1, resiUpdate.getNombre());
 			st.setString(2,  resiUpdate.getCodUniversidad());
