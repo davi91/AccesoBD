@@ -162,6 +162,7 @@ public class ProcController implements Initializable {
 		if( dniProperty.get() != null && !dniProperty.get().isEmpty()) {
 			
 			ArrayList<Estancia> estancias = app.getDBManager().getEstanciasValues(dniProperty.get());
+			estanciasList.clear(); // Limpiamos las que había antes
 			
 			if( estancias.size() <= 0 ) {
 				Alert alert = new Alert(AlertType.WARNING);

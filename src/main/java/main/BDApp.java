@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -91,13 +92,14 @@ public class BDApp extends Application {
 			nombreUnis.add(name);
 		});
 		
+		Collections.sort(nombreUnis); // Como el map nos lo desordena un poco, lo ordenamos
 		setUniversidades(nombreUnis);
+		
 		
 		//----------------------------------------------------------
 		
 		// Cargamos la vista, en este caso, la primera es la que no usa procedimientos
-		dbRoot = new DBController(this);
-		
+		mainStage = primaryStage;
 		launchNormalWindow();
 		mainStage.show();
 	}

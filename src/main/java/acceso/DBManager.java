@@ -11,9 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.sql.CallableStatement;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.util.Pair;
 import main.BDApp;
 
 /**
@@ -117,7 +114,8 @@ public class DBManager {
 		
 		try {
 			
-			PreparedStatement st = connection.prepareStatement("select codUniversidad, nomUniversidad from universidades");
+			PreparedStatement st = connection.prepareStatement("select codUniversidad, nomUniversidad from universidades"
+															  + " order by nomUniversidad");
 			
 			ResultSet result = st.executeQuery();
 			
