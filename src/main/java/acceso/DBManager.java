@@ -108,59 +108,26 @@ public class DBManager {
 		return null;
 	}
 	
-	/**
-	 * A partir del nombre consultamos el código de la universidad
-	 * @param Nombre de la universidad
-	 * @return Código de la universidad
-	 */
-	public String consultarCodUniversidad(String nombre) {
-		
-		try {
-			
-			// Preparamos la sentencia, en este caso una básica ya que sólo vamos a consultar los datos de una tabla
-			PreparedStatement st = connection.prepareStatement("select codUniversidad from universidades" 
-															+	" where universidades.nomUniversidad = ?");
-			
-			// Ponemos el dato de la universidad
-			st.setString(1, nombre);
-			
-			// Obtenemos los resultados
-			ResultSet result = st.executeQuery();
-			
-			
-			if( result.next() ) {
-				return result.getString("codUniversidad");
-			}
-
-			else {
-				throw new SQLException("No se encontró el nombre de la universidad");
-			}	
-			
-		} catch (SQLException e) {
-			BDApp.sendConnectionError(e.toString(), false);
-		}
-		
-		return null;	
-	}
 	
 	/**
-	 * Obtener el nombre de todas las universidades
-	 * @return Una lista con todos los nombres de las universidades
+	 * Obtener los datos de las universidades
+	 * @return Un "Map" con todas las universidades
 	 */
-	public ArrayList<String> consultarUniversidades() {
+	public Map<String, String> consultarUniversidades() {
 		
 		try {
 			
-			PreparedStatement st = connection.prepareStatement("select nomUniversidad from universidades");
+			PreparedStatement st = connection.prepareStatement("select codUniversidad, nomUniversidad from universidades");
 			
 			ResultSet result = st.executeQuery();
 			
-			ArrayList<String> listaUniversidades = new ArrayList<>();
+			Map<String, String> uniMap = new HashMap<>();
+			
 			while( result.next() ) {
-				listaUniversidades.add(result.getString("nomUniversidad"));
+				uniMap.put(result.getString("nomUniversidad"), result.getString("codUniversidad"));
 			}
 			
-			return listaUniversidades;
+			return uniMap;
 			
 		} catch(SQLException e) {
 			BDApp.sendConnectionError(e.toString(),  false);
@@ -257,6 +224,26 @@ public class DBManager {
 		return null;
 	}
 
+	public int consultaTiempoEstancias( String dni ) {
+		
+		try {
+			PreparedStatement st = connection.prepareStatement("select fn_tiempoResidencias(?)");
+			
+			st.setString(1, dni);
+			
+			ResultSet result = st.executeQuery();
+			result.next();
+			
+			// La función solo devuelve un valor
+			return result.getInt(1);
+			
+		} catch (SQLException e) {
+			BDApp.sendConnectionError(e.getMessage(), false);
+		}
+		
+		return -1;
+		
+	}
 	/**
 	 * Consultamos las estancias de una determinada residencia.
 	 * @param id ID de la residenica

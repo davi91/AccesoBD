@@ -120,7 +120,7 @@ public class DBController implements Initializable {
 		}
 		
 		// Obtenemos la lista de universidades 
-		ArrayList<String> listaUnis = app.getDBManager().consultarUniversidades();
+		ArrayList<String> listaUnis = app.getUniversidades();
 		
 		// Usamos el diálogo de inserción pero para la modificación, para ello consultamos los datos de la residecnia en la tabla
 		InsertResiDialog dialog = new InsertResiDialog(listaUnis, myResi.getNombre(), myResi.getNombreUniversidad(), myResi.getPrecio(), myResi.isComedor(), myResi.getId());
@@ -136,7 +136,7 @@ public class DBController implements Initializable {
 			myResi.setNombre(otherResi.getNombre());
 			
 			if( myResi.getCodUniversidad() != otherResi.getCodUniversidad() )
-				myResi.setCodUniversidad(app.getDBManager().consultarCodUniversidad(otherResi.getNombreUniversidad()));
+				myResi.setCodUniversidad(app.getUniMap().get((otherResi.getNombreUniversidad())));
 			
 			myResi.setNombreUniversidad(otherResi.getNombreUniversidad());
 			myResi.setPrecio(otherResi.getPrecio());
@@ -235,7 +235,7 @@ public class DBController implements Initializable {
 	private void onInsertResidencia() {
 		
 		// obtenemos la lista de universidades
-		InsertResiDialog dialog = new InsertResiDialog(app.getDBManager().consultarUniversidades());
+		InsertResiDialog dialog = new InsertResiDialog(app.getUniversidades());
 		
 		Optional<Residencia> resiOp = dialog.showAndWait();
 		
@@ -245,9 +245,9 @@ public class DBController implements Initializable {
 			try {
 				
 				// Añadimos la residencia
-				// Antes de nada, lo que recibimos es el nombre de la universidad, tiene que ser el código
+				// Antes de nada, lo que recibimos es el nombre de la universidad, tenemos que insertarle un código
 				Residencia ourResi = resiOp.get();
-				ourResi.setCodUniversidad(app.getDBManager().consultarCodUniversidad(ourResi.getNombreUniversidad()));
+				ourResi.setCodUniversidad(app.getUniMap().get(ourResi.getNombreUniversidad()));
 				app.getDBManager().insertarResidencia(ourResi);
 				
 				// Si todo sale bien

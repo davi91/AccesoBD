@@ -2,8 +2,6 @@ package acceso;
 
 import java.util.ArrayList;
 
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.StringExpression;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.image.ImageView;
@@ -15,66 +13,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import main.BDApp;
 import utils.NumberBinding;
 
 public class InsertResiDialog extends Dialog<Residencia> {
 
-	private class DialogCheckBinding extends BooleanBinding {
-
-		private StringExpression nombre;
-		private StringExpression precio;
-
-		public DialogCheckBinding(StringExpression nombre, StringExpression precio) {
-			
-			this.nombre = nombre;
-			this.precio = precio;
-			
-			bind(this.nombre, this.precio);
-		}
-		
-		@Override
-		protected boolean computeValue() {
-			return checkFieldsValid();
-		}
-		
-		private boolean checkFieldsValid() {
-			
-			if( nombre.get() == null  ) 
-				return false;
-			
-			if( nombre.get().equals(""))
-				return false;
-			
-			if(  precio.get() != null && precio.get().equals("") ||
-									  !checkIsNumber(precio.get()) ||
-									  Float.parseFloat(precio.get()) < BDApp.getMinprecioresidencia()) 			
-				return false;	
-			
-			return true;
-		}
-		
-		private boolean checkIsNumber(String expr) {
-			
-			try {
-				
-				@SuppressWarnings("unused")
-				float precioN = Float.parseFloat(expr);
-				return true;
-				
-			} catch(NumberFormatException e) {
-				
-			}
-			
-			return false;
-		}
-		
-		
-	}
 	// Los campos nombre y código son obligatorios
 	private TextField nombreTxt;
-	private TextField codTxt;
-	
+
 	// El precio debe ser numérico
 	private TextField precioTxt;
 	

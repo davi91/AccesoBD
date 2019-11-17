@@ -11,7 +11,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.GridPane;
 import javafx.util.Pair;
-import utils.NumberBinding;
 
 public class ConultaUniversidadDialog extends Dialog<Pair<String,Float>> {
 

@@ -77,6 +77,50 @@ public class ProcController implements Initializable {
 		consultarBt.setOnAction( evt -> onConsultaEstanciaS());
 		insertBt.setOnAction( evt-> onInsertarResidencia() );
 		queryBt.setOnAction( evt -> onConsutarUniversidad() );
+		timeBt.setOnAction( evt -> onConsultarTiempoEstancias());
+		goBackBt.setOnAction( evt -> onGoBack());
+	}
+	
+	/**
+	 * Volvemos a la pantalla "sin procedimientos"
+	 */
+	private void onGoBack() {
+		app.launchNormalWindow();
+	}
+	
+	/**
+	 * Consulta del tiempo en estancias de un estudiante según su DNI
+	 */
+	private void onConsultarTiempoEstancias() {
+		
+		if( dniProperty.get() != null && !dniProperty.get().isEmpty()) {
+			
+		  int tiempoEstancias = app.getDBManager().consultaTiempoEstancias(dniProperty.get());
+		  
+		  if( tiempoEstancias != -1) {
+			  
+			  if( tiempoEstancias > 0 ) {
+				  Alert alert = new Alert(AlertType.INFORMATION);
+				  alert.setTitle("Estancias");
+				  alert.setHeaderText("Tiempo en estancias del estudiante\n con DNI \"" + dniProperty.get() + "\"");
+				  alert.setContentText("El estudiante ha estado un total de " + tiempoEstancias + " meses");
+				  alert.showAndWait();
+			  }
+			  
+			  else {
+				  
+				  Alert alert = new Alert(AlertType.WARNING);
+				  alert.setTitle("Estancias");
+				  alert.setHeaderText("Tiempo en estancias del estudiante\n con DNI \"" + dniProperty.get() + "\"");
+				  alert.setContentText("No se han encontrado estancias asociadas a este estudiante");
+				  alert.showAndWait(); 
+			  }
+		  }
+		  
+		  
+		} else {
+			sendNoDNISelectedWarning();
+		}
 	}
 	
 	/**
@@ -84,7 +128,7 @@ public class ProcController implements Initializable {
 	 */
 	private void onConsutarUniversidad() {
 		
-		ConultaUniversidadDialog dialog = new ConultaUniversidadDialog(app.getDBManager().consultarUniversidades());
+		ConultaUniversidadDialog dialog = new ConultaUniversidadDialog(app.getUniversidades());
 		
 		Optional<Pair<String, Float>> result = dialog.showAndWait();
 		
@@ -115,18 +159,23 @@ public class ProcController implements Initializable {
 	 */
 	private void onConsultaEstanciaS() {
 		
-		ArrayList<Estancia> estancias = app.getDBManager().getEstanciasValues(dniProperty.get());
-		
-		if( estancias.size() <= 0 ) {
-			Alert alert = new Alert(AlertType.WARNING);
-			alert.setTitle("Estancias");
-			alert.setHeaderText("Estancias no encontradas");
-			alert.setContentText("El alumno con DNI \"" + dniProperty.get() + "\" \nno tiene ninguna estancia asociada" );
-			alert.showAndWait();
-			return;
+		if( dniProperty.get() != null && !dniProperty.get().isEmpty()) {
+			
+			ArrayList<Estancia> estancias = app.getDBManager().getEstanciasValues(dniProperty.get());
+			
+			if( estancias.size() <= 0 ) {
+				Alert alert = new Alert(AlertType.WARNING);
+				alert.setTitle("Estancias");
+				alert.setHeaderText("Estancias no encontradas");
+				alert.setContentText("El alumno con DNI \"" + dniProperty.get() + "\" \nno tiene ninguna estancia asociada" );
+				alert.showAndWait();
+				return;
+			}
+			
+			estanciasList.addAll(estancias);
+		} else {
+			sendNoDNISelectedWarning();
 		}
-		
-		estanciasList.addAll(estancias);
 	}
 	
 	/**
@@ -134,7 +183,7 @@ public class ProcController implements Initializable {
 	 */
 	public void onInsertarResidencia() {
 		
-		InsertResiDialog dialog = new InsertResiDialog(app.getDBManager().consultarUniversidades());
+		InsertResiDialog dialog = new InsertResiDialog(app.getUniversidades());
 		
 		Optional<Residencia> resiOp = dialog.showAndWait();
 		
@@ -143,7 +192,7 @@ public class ProcController implements Initializable {
 			try {
 				
 				// Insertamos el código de la residencia
-				resiOp.get().setCodUniversidad(app.getDBManager().consultarCodUniversidad(resiOp.get().getNombreUniversidad()));
+				resiOp.get().setCodUniversidad(app.getUniMap().get(resiOp.get().getNombreUniversidad()));
 				
 				// Simplemente lo añadimos a la base de datos, ya que aquí no hay un listado de residencias
 				Map<String,Boolean> results = app.getDBManager().proc_insertarResidencia(resiOp.get());
@@ -179,6 +228,17 @@ public class ProcController implements Initializable {
 			}
 			
 		}
+	}
+	
+	/**
+	 * Alerta de no DNI introducido
+	 */
+	public void sendNoDNISelectedWarning() {
+		
+		Alert alert = new Alert(AlertType.WARNING);
+		alert.setTitle("Consulta DNI");
+		alert.setHeaderText("No ha introducido ningún DNI válido");
+		alert.showAndWait();
 	}
 	
 	public VBox getRootView() {

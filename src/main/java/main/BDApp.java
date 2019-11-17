@@ -3,6 +3,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import acceso.DBController;
@@ -31,6 +34,12 @@ public class BDApp extends Application {
 	private static final String DBPASS = null; // De moemnto no hay contraseña
 	private static final String CON_MYSQL = "jdbc:mysql://localhost:3306/bdresidenciasescolares";
 	//---------------------------------------------------------
+
+	// Necesitamos el listado de univesidades actual
+	private ArrayList<String> universidades = new ArrayList<>();
+	
+	// Hacemos un Map de universidades, para no tener que estar consultando en la base de datos continuamente
+	private Map<String,String> uniMap = new HashMap<>();
 
 	/**
 	 * Precio de la residencia, no puede ser menor de 900
@@ -71,17 +80,32 @@ public class BDApp extends Application {
 		// Cargamos el gestor
 		dbManager = new DBManager(getdbCon());
 		
+		// 	Antes de iniciar los controladores establecemos las universidades disponibles
+		//----------------------------------------------------------
+		
+		setMapUniversidades();
+		
+		ArrayList<String> nombreUnis = new ArrayList<>();
+		
+		uniMap.forEach( (name,cod) -> {
+			nombreUnis.add(name);
+		});
+		
+		setUniversidades(nombreUnis);
+		
+		//----------------------------------------------------------
+		
 		// Cargamos la vista, en este caso, la primera es la que no usa procedimientos
 		dbRoot = new DBController(this);
 		
-		Scene scene = new Scene(dbRoot.getRootView(), 640, 480);
-		mainStage = primaryStage;
-		
-		mainStage.setTitle("Conexión con base de datos " + bd);
-		mainStage.setScene(scene);
+		launchNormalWindow();
 		mainStage.show();
 	}
 	
+	public Map<String, String> getUniMap() {
+		return uniMap;
+	}
+
 	/**
 	 * Método para iniciar la conexión con la base de datoss
 	 * @throws ClassNotFoundException 
@@ -149,16 +173,40 @@ public class BDApp extends Application {
 			Platform.exit();
 	}
 	
+	/**
+	 * Lanzamos el contenido "sin procedimientos"
+	 */
+	public void launchNormalWindow() {
+		
+		try {
+			dbRoot = new DBController(this);
+			Scene scene = new Scene(dbRoot.getRootView(), 640, 480);
+			mainStage.setScene(scene);
+			
+		} catch (IOException e) {
+			sendConnectionError(e.toString(), true);
+		}
+	}
+	
+	/**
+	 * Cargamos el contenido "con procedimientos"
+	 */
 	public void launchProcWindow() {
 		
 		try {
 			dbProcRoot = new ProcController(this);
 			Scene scene = new Scene(dbProcRoot.getRootView(), 640, 480);
 			mainStage.setScene(scene);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch(IOException e ) {
 			sendConnectionError(e.toString(), true);
 		}
+	}
+	
+	/**
+	 * "Mapeamos" las universidades
+	 */
+	public void setMapUniversidades() {
+		uniMap = getDBManager().consultarUniversidades();
 	}
 	
 	public static void main(String[] args) {
@@ -179,6 +227,14 @@ public class BDApp extends Application {
 
 	public static int getMinprecioresidencia() {
 		return minPrecioResidencia;
+	}
+	
+	public ArrayList<String> getUniversidades() {
+		return universidades;
+	}
+
+	public void setUniversidades(ArrayList<String> universidades) {
+		this.universidades = universidades;
 	}
 
 }
