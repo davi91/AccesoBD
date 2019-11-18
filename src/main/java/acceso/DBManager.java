@@ -85,7 +85,7 @@ public class DBManager {
 			if( bdServer == BDApp.DB_MYSQL ) {
 				stmt = connection.prepareCall("call sp_estuEstancias (?)");
 			} else if( bdServer == BDApp.DB_SQL ) {
-				stmt = connection.prepareCall("exec sp_estuEstancias (?)");
+				stmt = connection.prepareCall("exec sp_estuEstancias ?");
 			}
 			
 			stmt.setString(1, dni);
@@ -184,7 +184,7 @@ public class DBManager {
 			if( bdServer == BDApp.DB_MYSQL ) {
 				st = connection.prepareCall("call sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
 			} else if( bdServer == BDApp.DB_SQL ){
-				st = connection.prepareCall("exec sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
+				st = connection.prepareCall("exec sp_insertResidencia ?, ?, ?, ?, ?, ?");
 			}
 			
 			// Empezamos a poner los requisitos
@@ -221,7 +221,7 @@ public class DBManager {
 			if( bdServer == BDApp.DB_MYSQL ) {
 				stmt = connection.prepareCall("call sp_cuentaResidencias ( ?, ?, ?, ? )");
 			} else if( bdServer == BDApp.DB_SQL ){
-				stmt = connection.prepareCall("exec sp_cuentaResidencias ( ?, ?, ?, ? )");
+				stmt = connection.prepareCall("exec sp_cuentaResidencias  ?, ?, ?, ? ");
 			}
 			
 			stmt.setString(1, universidad);
@@ -247,7 +247,14 @@ public class DBManager {
 	public int consultaTiempoEstancias( String dni ) {
 		
 		try {
-			PreparedStatement st = connection.prepareStatement("select fn_tiempoResidencias(?)");
+			
+			PreparedStatement st = null;
+			
+			if( bdServer == BDApp.DB_MYSQL ) {
+				st = connection.prepareStatement("select fn_tiempoResidencias(?)");
+			} else if( bdServer == BDApp.DB_SQL ) {
+				st = connection.prepareStatement("select dbo.fn_tiempoResidencias(?)");
+			}
 			
 			st.setString(1, dni);
 			

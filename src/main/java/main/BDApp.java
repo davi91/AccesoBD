@@ -41,8 +41,8 @@ public class BDApp extends Application {
 
 	//---------------------------------------------------------
 	// SQL
-	private static final String DBUSER_SQL = "admin";
-	private static final String DBPASS_SQL = "admin";
+	private static final String DBUSER_SQL = "sad";
+	private static final String DBPASS_SQL = "sad";
 	private static final String CON_SQL = "jdbc:sqlserver://localhost;database=bdresidenciasescolares";
 	//---------------------------------------------------------
 	
