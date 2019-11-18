@@ -80,7 +80,14 @@ public class DBManager {
 		
 		try {
 			
-			CallableStatement stmt = connection.prepareCall("call sp_estuEstancias (?)");
+			CallableStatement stmt = null;
+			
+			if( bdServer == BDApp.DB_MYSQL ) {
+				stmt = connection.prepareCall("call sp_estuEstancias (?)");
+			} else if( bdServer == BDApp.DB_SQL ) {
+				stmt = connection.prepareCall("exec sp_estuEstancias (?)");
+			}
+			
 			stmt.setString(1, dni);
 			
 			ArrayList<Estancia> estancias = new ArrayList<>();
@@ -171,12 +178,12 @@ public class DBManager {
 		
 		try {
 			
-			CallableStatement st;
+			CallableStatement st = null;
 			
 			// Iniciamos la sentencia
 			if( bdServer == BDApp.DB_MYSQL ) {
 				st = connection.prepareCall("call sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
-			} else {
+			} else if( bdServer == BDApp.DB_SQL ){
 				st = connection.prepareCall("exec sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
 			}
 			
@@ -209,7 +216,13 @@ public class DBManager {
 		
 		try {
 			
-			CallableStatement stmt = connection.prepareCall("call sp_cuentaResidencias ( ?, ?, ?, ? )");
+			CallableStatement stmt = null;
+			
+			if( bdServer == BDApp.DB_MYSQL ) {
+				stmt = connection.prepareCall("call sp_cuentaResidencias ( ?, ?, ?, ? )");
+			} else if( bdServer == BDApp.DB_SQL ){
+				stmt = connection.prepareCall("exec sp_cuentaResidencias ( ?, ?, ?, ? )");
+			}
 			
 			stmt.setString(1, universidad);
 			stmt.setFloat(2, precio);
