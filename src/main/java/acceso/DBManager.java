@@ -22,9 +22,11 @@ import main.BDApp;
 public class DBManager {
 
 	private Connection connection;
-
-	public DBManager(Connection appCon) {
+	private String bdServer;
+	
+	public DBManager(Connection appCon, String bdServer) {
 		this.connection = appCon;
+		this.bdServer = bdServer;
 	}
 	
 	/**
@@ -143,7 +145,8 @@ public class DBManager {
 		
 		try {
 			
-			PreparedStatement st = connection.prepareStatement("insert into residencias values (NULL, ?, ?, ?, ?)");
+			PreparedStatement st = connection.prepareStatement("insert into residencias (nomResidencia, codUniversidad, precioMensual, comedor )"
+																+ "	values ( ?, ?, ?, ?)");
 			
 			// Empezamos a poner los requisitos
 			st.setString(1, myResi.getNombre());
@@ -168,8 +171,14 @@ public class DBManager {
 		
 		try {
 			
+			CallableStatement st;
+			
 			// Iniciamos la sentencia
-			CallableStatement st = connection.prepareCall("call sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
+			if( bdServer == BDApp.DB_MYSQL ) {
+				st = connection.prepareCall("call sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
+			} else {
+				st = connection.prepareCall("exec sp_insertResidencia( ?, ?, ?, ?, ?, ?)");
+			}
 			
 			// Empezamos a poner los requisitos
 			st.setString(1, myResi.getNombre());
@@ -200,7 +209,7 @@ public class DBManager {
 		
 		try {
 			
-			CallableStatement stmt = connection.prepareCall("call sp_cuentaResidencias ( ?, ?, ?, ?)");
+			CallableStatement stmt = connection.prepareCall("call sp_cuentaResidencias ( ?, ?, ?, ? )");
 			
 			stmt.setString(1, universidad);
 			stmt.setFloat(2, precio);
@@ -262,7 +271,7 @@ public class DBManager {
 			ResultSet result =  st.executeQuery();
 			
 			// Nos despalazamos
-			result.last();
+			result.next();
 			
 			return result.getInt(1);
 			

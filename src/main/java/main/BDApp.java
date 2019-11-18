@@ -1,6 +1,7 @@
 package main;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 import acceso.DBController;
 import acceso.DBManager;
@@ -30,12 +32,20 @@ public class BDApp extends Application {
 	//---------------------------------------------------------
 	
 	// Nuestra conexión atendiendo a cada base de datos
+	// MySQL
 	//---------------------------------------------------------
 	private static final String DBUSER = "root";
 	private static final String DBPASS = null; // De moemnto no hay contraseña
 	private static final String CON_MYSQL = "jdbc:mysql://localhost:3306/bdresidenciasescolares";
 	//---------------------------------------------------------
 
+	//---------------------------------------------------------
+	// SQL
+	private static final String DBUSER_SQL = "admin";
+	private static final String DBPASS_SQL = "admin";
+	private static final String CON_SQL = "jdbc:sqlserver://localhost;database=bdresidenciasescolares";
+	//---------------------------------------------------------
+	
 	// Necesitamos el listado de univesidades actual
 	private ArrayList<String> universidades = new ArrayList<>();
 	
@@ -79,7 +89,7 @@ public class BDApp extends Application {
 		}
 		
 		// Cargamos el gestor
-		dbManager = new DBManager(getdbCon());
+		dbManager = new DBManager(getdbCon(), getBd());
 		
 		// 	Antes de iniciar los controladores establecemos las universidades disponibles
 		//----------------------------------------------------------
@@ -115,13 +125,30 @@ public class BDApp extends Application {
 	 */
 	public void initBD() throws ClassNotFoundException, SQLException {
 		
-		// Cargamos la clase
-		Class.forName("com.mysql.cj.jdbc.Driver");
+		switch( getBd() ) {
+		case DB_MYSQL:
+			// Cargamos la clase
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			
+			dbCon = DriverManager.getConnection(CON_MYSQL, DBUSER, DBPASS);
+			
+			if( dbCon == null ) {
+				throw new SQLException("Conexión no valida");
+			}
+			
+			break;
 		
-		dbCon = DriverManager.getConnection(CON_MYSQL, DBUSER, DBPASS);
 		
-		if( dbCon == null ) {
-			throw new SQLException("Conexión no valida");
+		case DB_SQL:
+			
+			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver"); 
+			
+			dbCon = DriverManager.getConnection(CON_SQL,DBUSER_SQL,DBPASS_SQL); 
+			
+			if( dbCon == null ) {
+				throw new SQLException("Conexión de váida");
+			}
+			break;
 		}
 	}
 	

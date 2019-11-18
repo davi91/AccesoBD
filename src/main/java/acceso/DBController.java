@@ -2,21 +2,16 @@ package acceso;
 
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+
+
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -175,6 +170,7 @@ public class DBController implements Initializable {
 		// Para eliminar una residencia, tenemos que tener cuidado porque puede estar en la tabla estancias.
 		
 		// Primero consultamos si tenemos estancias
+		
 		if( app.getDBManager().consultarEstancias(id.get()) > 0 ) {
 			
 			Alert alert = new Alert(AlertType.CONFIRMATION);
@@ -183,6 +179,7 @@ public class DBController implements Initializable {
 			alert.setContentText("¿Está seguro de eliminar esta residencia\n con todas sus estancias?");
 			
 			Optional<ButtonType> check = alert.showAndWait();
+	
 			
 			if( check.get() == ButtonType.OK) {
 				
@@ -196,6 +193,7 @@ public class DBController implements Initializable {
 				// El usuario no quiere seguir borrando datos
 				return; 
 			}
+			
 			
 		} else {
 			
