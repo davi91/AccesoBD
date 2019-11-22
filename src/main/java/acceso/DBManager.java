@@ -116,6 +116,26 @@ public class DBManager {
 	
 	
 	/**
+	 * Obtemenos el ID de la última residencia
+	 * @return ID de la última residencia
+	 */
+	public int getLastResidencia() {
+	
+		try {
+			
+			ResultSet result = connection.createStatement().executeQuery("select top 1 codResidencia from residencias order by codResidencia desc");
+			result.next();
+			
+			return result.getInt(1);
+			
+		} catch(SQLException e ) {
+			BDApp.sendConnectionError(e.toString(), false);
+		}
+		
+		return -1;
+	}
+	
+	/**
 	 * Obtener los datos de las universidades
 	 * @return Un "Map" con todas las universidades
 	 */

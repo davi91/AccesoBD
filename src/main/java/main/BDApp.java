@@ -1,7 +1,6 @@
 package main;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 
 import acceso.DBController;
 import acceso.DBManager;
@@ -41,9 +39,14 @@ public class BDApp extends Application {
 
 	//---------------------------------------------------------
 	// SQL
-	private static final String DBUSER_SQL = "sad";
-	private static final String DBPASS_SQL = "sad";
+	private static final String DBUSER_SQL = "admin";
+	private static final String DBPASS_SQL = "admin";
 	private static final String CON_SQL = "jdbc:sqlserver://localhost;database=bdresidenciasescolares";
+	//---------------------------------------------------------
+	
+	//---------------------------------------------------------
+	// ACCESS
+	private static final String CON_ACCESS = "jdbc:ucanaccess://DBAccess/bResidenciasEscolares.accdb";
 	//---------------------------------------------------------
 	
 	// Necesitamos el listado de univesidades actual
@@ -149,8 +152,23 @@ public class BDApp extends Application {
 				throw new SQLException("Conexión de váida");
 			}
 			break;
+		
+		
+		case DB_ACCESS:
+			
+			Class.forName("net.ucanaccess.jdbc.UcanaccessDriver"); 
+
+			dbCon = DriverManager.getConnection(CON_ACCESS);
+			
+			if( dbCon == null ) {
+				throw new SQLException("Conexión no válida");
+			}
+			
+			break;
+			
 		}
-	}
+			
+	}	
 	
 	/**
 	 * Nos encargamos que el usuario pueda elegir entre las diferentes bases de datos.

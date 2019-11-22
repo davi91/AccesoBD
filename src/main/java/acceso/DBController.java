@@ -86,11 +86,21 @@ public class DBController implements Initializable {
 		// Listener para cada vez que cambia un elemento en la lista
 		tablaResidencias.getSelectionModel().selectedItemProperty().addListener((o, ov, nv) -> onIDChanged(nv));
 		
+		// Desactivamos el botón de procedimientos si estamos en Access
+		if( app.getBd() == BDApp.DB_ACCESS ) {
+			procBt.setDisable(true);
+		}
+		
 		// Eventos
 		addBt.setOnAction( evt -> onInsertResidencia() );
 		modBt.setOnAction( evt -> onModifyResidencia() );
 		delBt.setOnAction( evt -> onDeleteResidencia() );
-		procBt.setOnAction(evt -> onProcSelected() );
+		
+		if( app.getBd() != BDApp.DB_ACCESS ) {
+			procBt.setDisable(true);
+			procBt.setOnAction(evt -> onProcSelected() );
+		}
+		
 	}
 
 	/**
@@ -254,8 +264,8 @@ public class DBController implements Initializable {
 				alert.setHeaderText("La residencia ha sido introducida con éxito");
 				alert.showAndWait();
 				
-				// Para el ID necesitamos el último de la tabla residencias para no estar de nuevo conectando con la base de datos
-				ourResi.setId( residenciasList.get(residenciasList.getSize()-1).getId()+1);
+				// Para el ID necesitamos consultar el último ID introducido, puesto que al ser autonuméricono sabemos cual es el introducido.
+				ourResi.setId( app.getDBManager().getLastResidencia() ); 
 				
 				// Añadimos a la lista
 				residenciasList.add(ourResi);
